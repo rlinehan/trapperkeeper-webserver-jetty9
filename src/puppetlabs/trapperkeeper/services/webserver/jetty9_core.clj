@@ -59,7 +59,8 @@
   {(schema/optional-key :scheme) (schema/enum :orig :http :https)
    (schema/optional-key :ssl-config) (schema/either
                                        (schema/eq :use-server-config)
-                                       config/WebserverSslPemConfig)})
+                                       config/WebserverSslPemConfig)
+   (schema/optional-key :callback-fn) (schema/pred ifn?)})
 
 (def WebserverServiceContext
   {:state     Atom
@@ -259,7 +260,11 @@
           (HttpClient. custom-ssl-ctxt-factory)
           (if-let [ssl-ctxt-factory (:ssl-context-factory @(:state webserver-context))]
             (HttpClient. ssl-ctxt-factory)
-            (HttpClient.)))))))
+            (HttpClient.))))
+
+      (customizeProxyRequest [proxy-req req]
+        (if-let [callback-fn (:callback-fn options)]
+         (callback-fn proxy-req req))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public
