@@ -15,7 +15,10 @@
           {:status  200
            :headers {"Content-Type" "text/plain"}
            :body    "Hello, World!"})
-        url-prefix)
+        (str url-prefix "/orig"))
+      (add-ring-handler (fn [req]
+                          {:status 303
+                           :location (str url-prefix "/orig")}) (str url-prefix "/test"))
       (assoc context :url-prefix url-prefix))))
 
 (defservice hello-proxy-service
@@ -31,8 +34,9 @@
         {:host "localhost"
          :port 8080
          :path "/hello"}
-        "/hello"
-        {:server-id :foo})
+        "/hello-2"
+        {:server-id :foo
+         :follow-redirects true})
       (add-ring-handler
         (fn [req]
           {:status 200
